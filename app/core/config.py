@@ -115,7 +115,7 @@ class Settings(BaseSettings):
     QDRANT_HOST: str = "qdrant"
     QDRANT_PORT: int = 6333
     QDRANT_API_KEY: str = Field(default="", description="API Key opcional para Qdrant")
-    # QDRANT_COLLECTION_NAME: str = "agencia_knowledge_base"
+    QDRANT_COLLECTION_NAME: str = "agencia_knowledge_base"
     
     @computed_field
     @property
@@ -136,16 +136,9 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE_PRI: float = 0.2
     LLM_MODEL_SECONDARY: str = "openai/gpt-oss-20b"
     LLM_TEMPERATURE_SEC: float = 0.5
+    LLM_SENTENCES_TRANSFORMER: str = "all-MiniLM-L6-v2"
     
-    # ============================================
-    # RAG Configuration
-    # ============================================
-    # rag_chunk_size: int = 1000
-    # rag_chunk_overlap: int = 200
-    # rag_top_k: int = 5
-    # rag_score_threshold: float = 0.7
-
-
+   
 @lru_cache
 def get_settings() -> Settings:
     """

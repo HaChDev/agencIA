@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.routes import get_api_router
+# from app.api.routes import get_api_router
 from app.infrastructure.postgres.database import connect as pg_connect, disconnect as pg_disconnect
 from app.infrastructure.redis.client import connect as redis_connect, disconnect as redis_disconnect
 from app.infrastructure.rabbitmq_cliente.connection import connect as rmq_connect, disconnect as rmq_disconnect
@@ -63,7 +63,9 @@ app = FastAPI(
 # )
 
 # Incluir rutas de la API
-app.include_router(get_api_router())
+from app.api.routes import test_router
+
+app.include_router(test_router)
 
 
 @app.get("/")
@@ -73,25 +75,25 @@ async def root():
         "name": "AgencIA API",
         "version": "0.1.0",
         "status": "running",
-        "environment": settings.app_env
+        "environment": settings.APP_ENV
     }
 
 
-@app.get("/health")
-async def health_check():
-    """
-    Health check para verificar el estado de la aplicación.
+# @app.get("/health")
+# async def health_check():
+#     """
+#     Health check para verificar el estado de la aplicación.
     
-    Returns:
-        dict: Estado de la aplicación y servicios
-    """
-    return {
-        "status": "healthy",
-        "services": {
-            "api": "up",
-            "postgres": "pending",
-            "redis": "pending",
-            "rabbitmq": "pending",
-            "qdrant": "pending"
-        }
-    }
+#     Returns:
+#         dict: Estado de la aplicación y servicios
+#     """
+#     return {
+#         "status": "healthy",
+#         "services": {
+#             "api": "up",
+#             "postgres": "pending",
+#             "redis": "pending",
+#             "rabbitmq": "pending",
+#             "qdrant": "pending"
+#         }
+#     }
