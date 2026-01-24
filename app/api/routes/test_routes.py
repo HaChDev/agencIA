@@ -312,4 +312,23 @@ async def test_inspect_chunks(file_path: str):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@router.get(
+    "/test-rag-advanced",
+    summary="Test RAG Avanzado",
+    description="Test RAG Avanzado"
+)
+async def test_rag_advanced():
+    """
+    Test RAG Avanzado
+    """
+    import app.scripts.tests.test_rag_advanced as test_rag
+    try:
+        test_rag_results = await test_rag.test_rag()
+        return {
+            "success": True,
+            "rag_advanced_results": test_rag_results
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

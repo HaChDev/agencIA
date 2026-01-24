@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     # ============================================
     GROQ_API_KEY: str = Field(default="", description="API Key de Groq para LLM")
     OPENAI_API_KEY: str = Field(default="", description="API Key de OpenAI para embeddings")
+    COHERE_API_KEY: str = Field(default="", description="API Key de Cohere para re ranking en la recuperación de documentos")
     
     # ============================================
     # PostgreSQL
@@ -136,7 +137,17 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE_PRI: float = 0.2
     LLM_MODEL_SECONDARY: str = "openai/gpt-oss-20b"
     LLM_TEMPERATURE_SEC: float = 0.5
+
+    # ============================================
+    # LLM (Sentences Transformer)
+    # ============================================
     LLM_SENTENCES_TRANSFORMER: str = "all-MiniLM-L6-v2"
+
+    # ============================================
+    # LLM (Reranker)
+    # ============================================
+    LLM_RERANKER_MODEL: str = "rerank-multilingual-v3.0"
+    RAG_TOP_K: int = 10
     
    
 @lru_cache

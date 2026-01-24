@@ -8,6 +8,7 @@ import hashlib
 import re
 import nltk
 import numpy as np
+import pymupdf
 from qdrant_client import AsyncQdrantClient
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -213,7 +214,17 @@ class KnowledgeBase:
         """
         Extrae el texto crudo de un archivo y normaliza espacios en blanco.
         """
-        with open(url_archivo, "r", encoding="utf-8") as f:
+        # Extraer texto crudo de un archivo PDF
+        doc = pymupdf.open(url_archivo)
+        url_archivo_txt = url_archivo.replace(".pdf", ".txt")
+        out = open(url_archivo_txt, "wb") # create a text output
+        for page in doc: # iterate the document pages
+            text = page.get_text().encode("utf8") # get plain text (is in UTF-8)
+            out.write(text)
+            out.write(bytes((12,))) # write page delimiter (form feed 0x0C)
+        out.close()
+
+        with open(url_archivo_txt, "r", encoding="utf-8") as f:
             texto_crudo = f.read()
         
         import re
@@ -329,6 +340,49 @@ class KnowledgeBase:
     #         )
     #     )
     
+    async def search_hybrid(
+        self,
+        query_dense: list[float],
+        query_sparse: SparseVector,
+        filter_conditions: Optional[Filter] = None,
+        top_k: int = 10,
+        score_threshold: float = 0.5
+    ) -> list[Any]:
+        """
+        Realiza una búsqueda híbrida en Qdrant (Densa + Dispersa).
+        
+        Args:
+            query_dense: Vector denso de la consulta
+            query_sparse: Vector disperso de la consulta
+            filter_conditions: Filtros de metadatos (Qdrant Filter)
+            top_k: Número máximo de resultados
+            score_threshold: Puntuación mínima
+            
+        Returns:
+            Lista de ScoredPoint de Qdrant
+        """
+        # Prefetch para vector disperso
+        prefetch_sparse = qdrant_infra.models.Prefetch(
+            query=query_sparse,
+            using="keywords",
+            limit=top_k * 2,
+            filter=filter_conditions
+        )
+        
+        # Búsqueda densa (principal) combinada con prefetch disperso
+        results = await self.client.query_points(
+            collection_name=self.collection_name,
+            prefetch=[prefetch_sparse],
+            query=query_dense,
+            using="semantic",
+            limit=top_k,
+            query_filter=filter_conditions,     
+            score_threshold=score_threshold,
+            with_payload=True
+        )
+        
+        return results.points
+
     async def get_stats(self) -> dict:
         """
         Obtiene estadísticas de la base de conocimiento.

@@ -1,4 +1,4 @@
-from qdrant_client import AsyncQdrantClient
+from qdrant_client import AsyncQdrantClient, models
 from app.core.config import settings
 
 client_qdrant = None

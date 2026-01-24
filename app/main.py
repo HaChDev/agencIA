@@ -18,9 +18,9 @@ from app.infrastructure.qdrant.client import connect as qdrant_connect, disconne
 import debugpy
 import os
 
-if os.getenv("APP_DEBUG", "false").lower() == "true":
-    debugpy.listen(("0.0.0.0", 5678))
-    debugpy.wait_for_client()
+# if os.getenv("APP_DEBUG", "false").lower() == "true":
+#     debugpy.listen(("0.0.0.0", 5678))
+#     debugpy.wait_for_client()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     await pg_connect()
     await redis_connect()
     await qdrant_connect()
-    await rmq_connect()
+    # await rmq_connect()
 
     yield
     
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     print("Cerrando AgencIA...")
     await pg_disconnect()
     await redis_disconnect()
-    await rmq_disconnect()
+    # await rmq_disconnect()
     await qdrant_disconnect()
 
 

@@ -28,7 +28,7 @@ async def ejemplo_ingesta_individual():
     
     async with httpx.AsyncClient() as client:
         request_data = {
-            "file_path": "doc/ag_director_estrategia.txt",
+            "file_path": "doc/teoria/ag_director_estrategia.txt",
             "category": "Framework",
             "source_author": "AgencIA Team",
             "year": 2024,
