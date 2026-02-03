@@ -6,7 +6,7 @@ from app.rag.sparse_embedder import get_sparse_embedder
 from qdrant_client.models import Prefetch
 
 async def debug_retrieval():
-    print("🔍 Diagnóstico de Recuperación...")
+    print("Diagnóstico de Recuperación...")
     
     # 1. Setup
     await qdrant_infra.connect()
@@ -17,25 +17,25 @@ async def debug_retrieval():
     sparse_service = get_sparse_embedder()
     
     query_text = "campaña de marketing para redes sociales"
-    print(f"\n📝 Query: '{query_text}'")
+    print(f"Query: '{query_text}'")
     
     try:
         # 2. Generar Vectores
-        print("\n⚙️ Generando Embeddings...")
+        print("Generando Embeddings...")
         dense_vector = await emb_service.embed_text_dense(query_text)
-        print(f"✅ Dense Vector generado. Dim: {len(dense_vector)}")
+        print(f"Dense Vector generado. Dim: {len(dense_vector)}")
         print(f"   (Primeros 5 valores: {dense_vector[:5]})")
         
         sparse_vector = await sparse_service.generate_sparse_embedding(query_text)
-        print(f"✅ Sparse Vector generado.")
+        print(f"Sparse Vector generado.")
         print(f"   Índices: {sparse_vector.indices}")
         print(f"   Valores: {sparse_vector.values}")
         
         if not sparse_vector.indices:
-            print("⚠️ ADVERTENCIA: Vector disperso vacío. La búsqueda por keywords fallará.")
+            print("ADVERTENCIA: Vector disperso vacío. La búsqueda por keywords fallará.")
 
         # 3. Prueba Búsqueda Solo DENSA
-        print("\n🔎 Prueba 1: Búsqueda SOLO DENSA (Semantic)")
+        print("Prueba 1: Búsqueda SOLO DENSA (Semantic)")
         results_dense = await client.search(
             collection_name=collection_name,
             query_vector=dense_vector,
@@ -50,7 +50,7 @@ async def debug_retrieval():
             print(f"   - [{hit.score:.4f}] {hit.payload.get('category')} - {hit.id}")
 
         # 4. Prueba Búsqueda Solo DISPERSA
-        print("\n🔎 Prueba 2: Búsqueda SOLO DISPERSA (Keywords)")
+        print("Prueba 2: Búsqueda SOLO DISPERSA (Keywords)")
         results_sparse = await client.search(
             collection_name=collection_name,
             query_vector=sparse_vector,
@@ -64,7 +64,7 @@ async def debug_retrieval():
             print(f"   - [{hit.score:.4f}] {hit.payload.get('category')} - {hit.id}")
 
         # 5. Prueba Búsqueda Híbrida (Actual Implementación)
-        print("\n🔎 Prueba 3: Búsqueda HÍBRIDA (Prefetch Sparse -> Query Dense)")
+        print("Prueba 3: Búsqueda HÍBRIDA (Prefetch Sparse -> Query Dense)")
         prefetch_sparse = Prefetch(
             query=sparse_vector,
             using="keywords",
@@ -84,7 +84,7 @@ async def debug_retrieval():
             print(f"   - [{hit.score:.4f}] {hit.payload.get('category')} - {hit.id}")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
     finally:
         await client.close()
         await emb_service.close()

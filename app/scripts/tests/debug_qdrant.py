@@ -3,7 +3,7 @@ import app.infrastructure.qdrant.client as qdrant_infra
 from app.core.config import settings
 
 async def debug_qdrant():
-    print("🔍 Inspeccionando Qdrant...")
+    print("Inspeccionando Qdrant...")
     await qdrant_infra.connect()
     
     collection_name = settings.QDRANT_COLLECTION_NAME
