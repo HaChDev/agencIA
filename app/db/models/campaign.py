@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 import enum
 
-from sqlalchemy import String, DateTime, ForeignKey, Float, CheckConstraint, BigInteger, Identity
+from sqlalchemy import String, DateTime, ForeignKey, Float, CheckConstraint, BigInteger, Identity, Enum as SQLEnum, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.schema import FetchedValue
@@ -16,14 +16,14 @@ from sqlalchemy.schema import FetchedValue
 from app.db.base import Base
 
 # Enums para los campos con opciones limitadas
-class CampaignStatus(enum.Enum):
+class CampaignStatus(str, enum.Enum):
     PLANNING = "P"  # Planificación
     ACTIVE = "A"    # Activa
     COMPLETED = "C" # Completada
     PAUSED = "S"    # Pausada (Suspended)
     CANCELLED = "X" # Cancelada
 
-class CampaignPriority(enum.Enum):
+class CampaignPriority(int, enum.Enum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
@@ -43,7 +43,7 @@ class Campaign(Base):
     
     # Información básica
     camp_name: Mapped[str] = mapped_column(String(100), nullable=False, comment="Nombre de la campaña")
-    camp_status: Mapped[CampaignStatus] = mapped_column(default=CampaignStatus.PLANNING, nullable=False, 
+    camp_status: Mapped[CampaignStatus] = mapped_column(String(1), default=CampaignStatus.PLANNING, nullable=False, 
         comment="Estado: P=Planificación, A=Activa, C=Completada, S=Pausada, X=Cancelada")
     camp_brief_data: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False,
         comment="Datos del brief en formato JSON (objetivos, audiencia, etc.)"
@@ -65,7 +65,7 @@ class Campaign(Base):
     
     # Metadata adicional
     camp_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, unique=True, comment="Código único de la campaña")
-    camp_priority: Mapped[int] = mapped_column(default=1, nullable=False, comment="Prioridad: 1=Baja, 2=Media, 3=Alta, 4=Urgente")
+    camp_priority: Mapped[CampaignPriority] = mapped_column(Integer, default=CampaignPriority.LOW, nullable=False, comment="Prioridad: 1=Baja, 2=Media, 3=Alta, 4=Urgente")
     camp_progress_percentage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False, comment="Porcentaje de progreso (0-100)")
     camp_roi_actual: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="ROI real obtenido")
     camp_spent_budget: Mapped[float] = mapped_column(Float, default=0.0, nullable=False, comment="Presupuesto gastado hasta el momento")
@@ -82,12 +82,12 @@ class Campaign(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relaciones
-    user: Mapped["User"] = relationship(back_populates="campaigns")
+    user: Mapped["User"] = relationship(back_populates="campaigns", foreign_keys=[user_id])
     strategies: Mapped[List["Strategy"]] = relationship(back_populates="campaign", cascade="all, delete-orphan")
     industry: Mapped["Industry"] = relationship(back_populates="campaigns")
     
     # Usuario que aprobó (relación separada)
-    approved_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[camp_approved_by], backref="approved_campaigns")
+    approved_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[camp_approved_by], back_populates="approved_campaigns")
     
     # Constraints
     __table_args__ = (

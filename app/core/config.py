@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = Field(default="", description="API Key de Groq para LLM")
     OPENAI_API_KEY: str = Field(default="", description="API Key de OpenAI para embeddings")
     COHERE_API_KEY: str = Field(default="", description="API Key de Cohere para re ranking en la recuperación de documentos")
+    TAVILY_API_KEY: str = Field(default="", description="API Key de Tavily para búsqueda web en tiempo real")
     
     # ============================================
     # PostgreSQL
@@ -72,12 +73,15 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = "redis_secret"
     REDIS_DB: int = 0
+    REDIS_SESSION_TTL: int = 86400    # 24 horas
+    REDIS_CHECKPOINT_TTL: int = 604800 # 7 días
     
     @computed_field
     @property
     def redis_url(self) -> str:
         """URL de conexión a Redis."""
         return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
 
     # ============================================
     # Redis Vector (Vector Store Auxiliar)

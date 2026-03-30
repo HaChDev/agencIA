@@ -22,3 +22,16 @@ async def connect():
 async def disconnect():
     if engine:
         await engine.dispose()
+
+
+# Dependencia de FastAPI para obtener la sesión de base de datos
+async def get_db_session():
+    # Asegurarse de que SessionLocal está inicializado
+    if SessionLocal is None:
+        raise RuntimeError("Error en base de datos sesion no inicializada. llamar primero el metodo connect().")
+    
+    async with SessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

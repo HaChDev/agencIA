@@ -1,29 +1,27 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from sqlalchemy import Column, BigInteger, Integer, String, Boolean, Float, DateTime, JSON, CheckConstraint, ForeignKey, DECIMAL
+from sqlalchemy import Column, BigInteger, Integer, String, Boolean, Float, DateTime, JSON, CheckConstraint, ForeignKey, DECIMAL, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import Identity
 import enum
-
-Base = declarative_base()
+from app.db.base import Base
 
 # Enums para los campos con opciones limitadas
-class StrategyStatus(enum.Enum):
+class StrategyStatus(str, enum.Enum):
     DRAFT = "D"
     PENDING = "P"
     APPROVED = "A"
     REJECTED = "R"
     CANCELLED = "C"
 
-class StrategyDifficulty(enum.Enum):
+class StrategyDifficulty(str, enum.Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     EXPERT = "EXPERT"
 
-class StrategyType(enum.Enum):
+class StrategyType(str, enum.Enum):
     CONTENT = "content"
     SOCIAL_MEDIA = "social_media"
     EMAIL = "email"
@@ -50,7 +48,8 @@ class Strategy(Base):
     
     # Información de versión y estado
     stra_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    stra_status: Mapped[str] = mapped_column(String(1), default=StrategyStatus.DRAFT.value, nullable=False, comment="Estado: D=Draft/Borrador, P=Pending/En revisión, A=Approved/Aprobada, R=Rejected/Rechazada, C=Canceled/Cancelada")
+    stra_status: Mapped[StrategyStatus] = mapped_column(String(1), default=StrategyStatus.DRAFT, nullable=False, 
+        comment="Estado: D=Draft/Borrador, P=Pending/En revisión, A=Approved/Aprobada, R=Rejected/Rechazada, C=Canceled/Cancelada")
     
     # Contenido de la estrategia
     stra_content: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False, comment="Estructura completa de la estrategia en JSON (generada por IA)")
@@ -68,9 +67,10 @@ class Strategy(Base):
     
     # Metadata de la estrategia
     stra_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, comment="Nombre descriptivo de la estrategia")
-    stra_type: Mapped[Optional[StrategyType]] = mapped_column(Enum(StrategyType), nullable=True, comment="Tipo de estrategia")
+    stra_type: Mapped[Optional[StrategyType]] = mapped_column(String(50), nullable=True, comment="Tipo de estrategia")
     stra_priority: Mapped[int] = mapped_column(Integer, default=1, nullable=False, comment="1=Alta, 5=Baja")
-    stra_difficulty: Mapped[str] = mapped_column(String(20), default=StrategyDifficulty.MEDIUM.value, nullable=False, comment="Dificultad: LOW, MEDIUM, HIGH, EXPERT")
+    stra_difficulty: Mapped[StrategyDifficulty] = mapped_column(String(20), default=StrategyDifficulty.MEDIUM, 
+        nullable=False, comment="Dificultad: LOW, MEDIUM, HIGH, EXPERT")
 
     # Información del agente IA
     ai_agent_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="ID del agente IA que generó esta versión")
@@ -107,7 +107,6 @@ class Strategy(Base):
     ################################################### Relaciones  #######################################################
 
     campaign: Mapped["Campaign"] = relationship(back_populates="strategies")
-    campaign_id: Mapped[int] = mapped_column(ForeignKey("campaigns.id", ondelete="CASCADE"))
     approved_by_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[stra_approved_by], backref="approved_strategies")
     
     ################################################### Constraints adicionales (se pueden definir en __table_args__) ##################################################

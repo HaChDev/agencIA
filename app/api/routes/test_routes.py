@@ -5,9 +5,13 @@ Endpoints REST para testing de funcionalidades del sistema RAG.
 """
 
 import traceback
-from fastapi import APIRouter, HTTPException, status
+import json
+import json
+from fastapi import APIRouter, HTTPException, status, Depends
 from pathlib import Path
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.infrastructure.postgres.database import get_db_session
 
 from app.api.models.ingest_models import (
     DocumentIngestRequest, 
@@ -327,6 +331,31 @@ async def test_rag_advanced():
         return {
             "success": True,
             "rag_advanced_results": test_rag_results
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/test-director-hybrid",
+    summary="Test Director Hybrid",
+    description="Test Director Hybrid"
+)
+async def test_director_hybrid(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db_session)
+):
+    """
+    Test Director Hybrid
+    """
+    import app.scripts.tests.test_director_hybrid as test_director
+    try:
+        test_director_results = await test_director.test(user_id, db_session=db)
+        return {
+            "success": True,
+            "director_hybrid_results": json.dumps(test_director_results)
         }
     except Exception as e:
         import traceback

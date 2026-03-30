@@ -27,5 +27,5 @@ class Industry(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     
     # Relaciones
-    campaigns: Mapped[List["Campaign"]] = relationship(back_populates="industries")
-    users: Mapped[List["User"]] = relationship(back_populates="industries")
+    campaigns: Mapped[List["Campaign"]] = relationship(back_populates="industry")
+    users: Mapped[List["User"]] = relationship(back_populates="industry")

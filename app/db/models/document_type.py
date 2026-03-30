@@ -26,4 +26,4 @@ class DocumentType(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     
     # Relaciones
-    users: Mapped[List["User"]] = relationship(back_populates="document_types")
+    users: Mapped[List["User"]] = relationship(back_populates="document_type")

@@ -25,4 +25,4 @@ class PoliticDivision(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     
     # Relaciones
-    users: Mapped[List["User"]] = relationship(back_populates="politics_divisions")
+    users: Mapped[List["User"]] = relationship(back_populates="politic_division")

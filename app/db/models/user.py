@@ -42,7 +42,8 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relaciones
-    campaigns: Mapped[List["Campaign"]] = relationship(back_populates="user")
+    campaigns: Mapped[List["Campaign"]] = relationship(back_populates="user", foreign_keys="[Campaign.user_id]")
+    approved_campaigns: Mapped[List["Campaign"]] = relationship("Campaign", back_populates="approved_by", foreign_keys="[Campaign.camp_approved_by]")
     politic_division: Mapped["PoliticDivision"] = relationship(back_populates="users")
     industry: Mapped["Industry"] = relationship(back_populates="users")
     document_type: Mapped["DocumentType"] = relationship(back_populates="users")
