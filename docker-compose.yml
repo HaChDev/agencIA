@@ -16,35 +16,35 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     command:
-    - "postgres"
-    - "-c"
-    - "shared_buffers=3GB"
-    - "-c"
-    - "work_mem=16MB"
-    - "-c"
-    - "maintenance_work_mem=512MB"
-    - "-c"
-    - "effective_cache_size=7GB"
-    - "-c"
-    - "max_connections=200"
-    - "-c"
-    - "statement_timeout=30s"
-    - "-c"
-    - "idle_in_transaction_session_timeout=60s"
-    - "-c"
-    - "lock_timeout=5s"
-    - "-c"
-    - "wal_buffers=16MB"
-    - "-c"
-    - "checkpoint_timeout=10min"
-    - "-c"
-    - "max_wal_size=4GB"
-    - "-c"
-    - "min_wal_size=1GB"
-    - "-c"
-    - "log_min_duration_statement=500"
-    - "-c"
-    - "log_lock_waits=on"
+      - postgres
+      - -c
+      - shared_buffers=3GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=512MB
+      - -c
+      - effective_cache_size=7GB
+      - -c
+      - max_connections=200
+      - -c
+      - statement_timeout=120s
+      - -c
+      - idle_in_transaction_session_timeout=300s
+      - -c
+      - lock_timeout=5s
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - checkpoint_timeout=10min
+      - -c
+      - max_wal_size=4GB
+      - -c
+      - min_wal_size=1GB
+      - -c
+      - log_min_duration_statement=500
+      - -c
+      - log_lock_waits=on
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s

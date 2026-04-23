@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     COHERE_API_KEY: str = Field(default="", description="API Key de Cohere para re ranking en la recuperación de documentos")
     TAVILY_API_KEY: str = Field(default="", description="API Key de Tavily para búsqueda web en tiempo real")
     
+    # LangSmith Observability
+    LANGCHAIN_TRACING_V2: str = Field(default="false")
+    LANGCHAIN_ENDPOINT: str = Field(default="https://api.smith.langchain.com")
+    LANGCHAIN_API_KEY: str = Field(default="")
+    LANGCHAIN_PROJECT: str = Field(default="agencia-director-v1")
+    
     # ============================================
     # PostgreSQL
     # ============================================
@@ -167,3 +173,10 @@ def get_settings() -> Settings:
 
 # Instancia global de configuración
 settings = get_settings()
+
+import os
+if settings.LANGCHAIN_TRACING_V2.lower() == "true" and settings.LANGCHAIN_API_KEY:
+    os.environ["LANGCHAIN_TRACING_V2"] = settings.LANGCHAIN_TRACING_V2
+    os.environ["LANGCHAIN_ENDPOINT"] = settings.LANGCHAIN_ENDPOINT
+    os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
+    os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT

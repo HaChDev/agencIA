@@ -8,6 +8,7 @@ import traceback
 import json
 import json
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.encoders import jsonable_encoder
 from pathlib import Path
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -344,18 +345,17 @@ async def test_rag_advanced():
     description="Test Director Hybrid"
 )
 async def test_director_hybrid(
-    user_id: int, 
-    db: AsyncSession = Depends(get_db_session)
+    user_id: int
 ):
     """
     Test Director Hybrid
     """
     import app.scripts.tests.test_director_hybrid as test_director
     try:
-        test_director_results = await test_director.test(user_id, db_session=db)
+        test_director_results = await test_director.test(user_id)
         return {
             "success": True,
-            "director_hybrid_results": json.dumps(test_director_results)
+            "director_hybrid_results": jsonable_encoder(test_director_results)
         }
     except Exception as e:
         import traceback

@@ -25,9 +25,13 @@ class AsyncRedisCheckpointSaver(BaseCheckpointSaver):
         self.client = client
         self.namespace = namespace
 
-    def _get_key_prefix(self, thread_id: str) -> str:
-        """Genera el prefijo de llave aislado por agente y hilo."""
-        return f"agencia:{self.namespace}:thread:{thread_id}"
+    def _get_key_prefix(self, config: RunnableConfig) -> str:
+        """Genera el prefijo de llave aislado por usuario, campaña, agente y hilo."""
+        configurable = config.get("configurable", {})
+        thread_id = configurable.get("thread_id", "default")
+        user_id = configurable.get("user_id", "default")
+        campaign_id = configurable.get("campaign_id", "default")
+        return f"agencia:user:{user_id}:campaign:{campaign_id}:agent:{self.namespace}:thread:{thread_id}"
 
     async def aput(
         self,
@@ -40,10 +44,11 @@ class AsyncRedisCheckpointSaver(BaseCheckpointSaver):
         Guarda un checkpoint en Redis con TTL para optimización de RAM.
         Optimizado con Pipeline para velocidad.
         """
-        thread_id = config["configurable"]["thread_id"]
+        configurable = config.get("configurable", {})
+        thread_id = configurable.get("thread_id", "default")
         checkpoint_id = checkpoint.get("id") or metadata.get("checkpoint_id") or "latest"
         
-        prefix = self._get_key_prefix(thread_id)
+        prefix = self._get_key_prefix(config)
         key = f"{prefix}:checkpoint:{checkpoint_id}"
         latest_key = f"{prefix}:latest"
         
@@ -64,6 +69,7 @@ class AsyncRedisCheckpointSaver(BaseCheckpointSaver):
         
         return {
             "configurable": {
+                **configurable,
                 "thread_id": thread_id,
                 "checkpoint_id": checkpoint_id,
             }
@@ -71,10 +77,9 @@ class AsyncRedisCheckpointSaver(BaseCheckpointSaver):
 
     async def aget_tuple(self, config: RunnableConfig) -> Optional[CheckpointTuple]:
         """Recupera el estado exacto o el último disponible del agente específico."""
-        thread_id = config["configurable"]["thread_id"]
-        checkpoint_id = config["configurable"].get("checkpoint_id")
+        checkpoint_id = config.get("configurable", {}).get("checkpoint_id")
         
-        prefix = self._get_key_prefix(thread_id)
+        prefix = self._get_key_prefix(config)
         
         # Si no piden un ID específico, buscamos el puntero 'latest' de este agente
         if not checkpoint_id:

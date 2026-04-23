@@ -50,12 +50,12 @@ async def search_knowledge_base(query: str) -> str:
         if not results:
             return "No se encontró información relevante en la base de conocimiento interna."
             
-        # Formatear respuesta para el LLM
+        # Formatear respuesta para el LLM (máximo 3 resultados, truncados)
         formatted_response = "### Resultados de la Base de Conocimiento:\n\n"
-        for i, res in enumerate(results, 1):
+        for i, res in enumerate(results[:3], 1):
             formatted_response += f"**Documento {i}** (Score: {res.score:.2f})\n"
             formatted_response += f"Fuente: {res.source}\n"
-            formatted_response += f"Contenido: {res.content[:800]}...\n\n" # Truncar para no saturar contexto
+            formatted_response += f"Contenido: {res.content[:500]}...\n\n"
             
         return formatted_response
     except Exception as e:
@@ -74,7 +74,7 @@ async def market_research(industry: str, region: str, focus_areas: List[str]) ->
     
     rag_summary = ""
     if rag_results:
-        rag_summary = "Datos Internos:\n" + "\n".join([f"- {r.content[:200]}" for r in rag_results[:3]])
+        rag_summary = "Datos Internos:\n" + "\n".join([f"- {r.content[:200]}" for r in rag_results[:2]])
     
     # 2. Búsqueda Web Real (Tavily)
     web_data = ""

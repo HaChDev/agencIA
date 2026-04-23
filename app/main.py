@@ -18,9 +18,10 @@ from app.infrastructure.qdrant.client import connect as qdrant_connect, disconne
 import debugpy
 import os
 
-if os.getenv("APP_DEBUG", "false").lower() == "true":
-    debugpy.listen(("0.0.0.0", 5678))
-    debugpy.wait_for_client()
+# Comentar o descomentar para activar el modo debugg de la app
+# if os.getenv("APP_DEBUG", "false").lower() == "true":
+#     debugpy.listen(("0.0.0.0", 5678))
+#     debugpy.wait_for_client()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

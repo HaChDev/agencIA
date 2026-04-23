@@ -2,6 +2,9 @@
 AgencIA - Estado del Agente Director
 ======================================
 Definición del estado para el grafo LangGraph (Nivel Experto).
+
+Principio arquitectónico: messages es para diálogo, NO para almacenar datos.
+Los findings de RAG y research viven en campos estructurados del estado.
 """
 
 from dataclasses import dataclass, field
@@ -44,42 +47,45 @@ class StrategyVersion:
     critique_comments: List[ReviewComment] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
-@dataclass
+
 class DirectorState(TypedDict):
     """
     Estado principal del Agente Director para LangGraph.
-    Incluye historial de versiones para permitir refinamiento iterativo.
+
+    Arquitectura de datos:
+    - messages: SOLO diálogo ligero (no acumular ToolMessages de research)
+    - initial_analysis / research_findings: datos estructurados fuera de messages
+    - Cada nodo construye su contexto mínimo desde campos estructurados
     """
-    # Mensajes conversacionales (acumulativos)
+    # === CANAL DE MENSAJES (solo diálogo, NO datos de research) ===
     messages: Annotated[List[BaseMessage], add_messages]
-    
+
     # Identificadores de sesión
     session_id: str
     client_id: str
-    
+
     # Brief del cliente (entrada principal)
     client_brief: Optional[Dict]
-    
-    # Contexto acumulado (RAG + Research)
-    research_data: Dict[str, Any]
-    
-    # Estrategia en desarrollo
+
+    # === DATOS ESTRUCTURADOS DE INVESTIGACIÓN ===
+    initial_analysis: Dict[str, Any]          # Output parseado de analyze_brief
+    research_findings: Dict[str, Any]         # Hallazgos extraídos de tools (fuera de messages)
+    research_queries_attempted: List[str]     # Queries ya intentadas (evitar duplicados)
+    research_iterations: int                  # Contador del loop de research
+
+    # === OUTPUTS ESTRUCTURADOS ===
     current_strategy: Optional[Dict]
-    
-    # Versiones anteriores (para tracking de mejoras)
     strategy_versions: List[StrategyVersion]
-    
-    # Crítica actual
-    current_critique: Optional[List[ReviewComment]]
-    
+    current_critique: Optional[str]           # Texto de la crítica actual
+
     # Tareas y asignaciones
     tasks: List[Dict]
     agent_assignments: Dict[str, Dict]
-    
+
     # Control de flujo
     current_phase: str
-    iteration_count: int  # Para evitar bucles infinitos de refinamiento
-    
+    iteration_count: int  # Para loop critique ↔ refine
+
     # Errores
     errors: List[str]
 
@@ -97,7 +103,10 @@ def create_initial_state(
         session_id=session_id,
         client_id=client_id,
         client_brief=brief,
-        research_data={},
+        initial_analysis={},
+        research_findings={},
+        research_queries_attempted=[],
+        research_iterations=0,
         current_strategy=None,
         strategy_versions=[],
         current_critique=None,

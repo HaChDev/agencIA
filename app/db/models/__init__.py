@@ -10,3 +10,4 @@ from .politic_division import PoliticDivision
 from .document_type import DocumentType
 from .campaign import Campaign
 from .strategy import Strategy
+from .agent import Agent

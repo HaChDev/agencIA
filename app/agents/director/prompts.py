@@ -3,6 +3,9 @@ AgencIA - Prompts Expertos (System 2 Thinking)
 ==============================================
 Prompts diseñados para evocar razonamiento de alto nivel, 
 uso de frameworks teóricos y crítica estratégica.
+
+Todos los prompts del Director viven aquí para mantener
+graph.py limpio de texto largo.
 """
 
 # ============================================
@@ -56,14 +59,46 @@ Salida esperada (JSON):
 """
 
 # ============================================
+# PHASE 1b: RESEARCH EXECUTION
+# ============================================
+RESEARCH_EXECUTION_PROMPT = """
+Investigación para campaña de marketing.
+Iteración {current_iteration} de {max_iterations}.
+
+ANÁLISIS INICIAL:
+{analysis}
+
+TEMAS A INVESTIGAR:
+{recommended_topics}
+
+{already_known_section}
+
+{queries_done_section}
+
+HERRAMIENTAS DISPONIBLES:
+- 'search_knowledge_base': Para teoría, frameworks y casos de estudio internos.
+- 'market_intelligence': Para datos externos actualizados de mercado.
+- 'get_channel_benchmarks': Para métricas de rendimiento por canal.
+
+REGLAS ESTRICTAS:
+1. NO repitas queries que ya se intentaron (ver lista arriba si existe).
+2. NO busques información que ya tienes (ver hallazgos previos arriba si existen).
+3. Si ya tienes suficiente información o estás en la última iteración, NO uses herramientas. Responde SOLO con un resumen breve de tus hallazgos.
+4. Máximo 2 llamadas a herramientas por iteración.
+"""
+
+# ============================================
 # PHASE 2: STRATEGY DRAFTING
 # ============================================
 DRAFT_STRATEGY_PROMPT = """
-Basado en tu investigación, crea el BOCETO DE ESTRATEGIA INICIAL.
-Este es un borrador que será sometido a crítica rigurosa.
+Redacta el BOCETO DE ESTRATEGIA INICIAL basado en los datos recopilados.
+Este borrador será sometido a crítica rigurosa.
 
-CONTEXTO INVESTIGACIÓN:
-{research_summary}
+## BRIEF DEL CLIENTE
+{brief_summary}
+
+## HALLAZGOS DE INVESTIGACIÓN
+{findings_summary}
 
 FRAMEWORK OBLIGATORIO:
 Usa el modelo RACE (Reach, Act, Convert, Engage) para estructurar el plan.
@@ -74,6 +109,8 @@ REQUISITOS:
 - Propón canales clave justificados por los datos de investigación.
 
 No te preocupes por la perfección, preocúpate por la coherencia lógica.
+
+Responde en formato JSON estructurado.
 """
 
 # ============================================
@@ -92,7 +129,25 @@ BUSCA FALLAS EN:
 3. **Diferenciación**: ¿Es esta estrategia genérica o única para el cliente?
 4. **Riesgos**: ¿Qué pasa si el canal principal falla?
 
-Salida esperada: Lista de críticas severas pero accionables. Si la estrategia es sólida, apruébala explícitamente.
+Salida esperada: Lista de críticas severas pero accionables. Si la estrategia es sólida, escribe "APROBADO" y justifica brevemente.
+"""
+
+# ============================================
+# PHASE 3b: STRATEGY REFINEMENT
+# ============================================
+REFINE_STRATEGY_PROMPT = """
+Tu estrategia recibió la siguiente crítica. Debes mejorarla.
+
+## ESTRATEGIA ACTUAL
+{current_strategy}
+
+## CRÍTICA RECIBIDA
+{critique}
+
+INSTRUCCIONES:
+1. Aborda CADA punto crítico de forma específica.
+2. Mantén lo que funciona, mejora lo que falla.
+3. Responde con la estrategia COMPLETA reescrita en formato JSON.
 """
 
 # ============================================
@@ -101,6 +156,9 @@ Salida esperada: Lista de críticas severas pero accionables. Si la estrategia e
 DECOMPOSE_TASKS_PROMPT = """
 La estrategia ha sido aprobada. Ahora conviértela en un PLAN DE BATALLA operativo.
 Desglosa la estrategia en tareas atómicas asignables a tus agentes especializados.
+
+## ESTRATEGIA APROBADA
+{strategy}
 
 AGENTES DISPONIBLES:
 - **Content Agent**: Textos, blogs, guiones.
